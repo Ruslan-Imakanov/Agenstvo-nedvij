@@ -54,8 +54,8 @@ export const SITE = {
       name: USPEKH.name,
       avatarIcon: true,
       photo: '',
-      phone: USPEKH.phones[1],   // мобильный +7 701 524 73 72; WhatsApp неизвестен — не указываем
-      whatsapp: '',
+      phone: USPEKH.phones[1],   // основной номер — мобильный +7 701 524 73 72, на нём есть WhatsApp
+      whatsapp: USPEKH.phones[1],
       telegram: '',
       instagram: '',
       email: USPEKH.email,
@@ -72,7 +72,7 @@ export const SITE = {
       telegram: '',
       instagram: '',
       email: '',
-      address: ''
+      address: 'г. Рудный, ул. Ленина, 135'
     }
   },
 
