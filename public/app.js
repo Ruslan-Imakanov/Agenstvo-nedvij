@@ -42,7 +42,7 @@ const waUrl = (n, text) => `https://wa.me/7${n}${text ? '?text=' + encodeURIComp
 
 function avatar(s) {
   if (s.photo) return `<span class="ava"><img src="img/${esc(s.photo)}" alt="" loading="lazy" width="46" height="46"></span>`;
-  if (s.name) return `<span class="ava">${esc(s.name.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>`;
+  if (s.name && !s.avatarIcon) return `<span class="ava">${esc(s.name.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>`;
   return `<span class="ava">${icon(DIR_ICON[s.dir])}</span>`;
 }
 function linksHtml(s, { compact = false } = {}) {

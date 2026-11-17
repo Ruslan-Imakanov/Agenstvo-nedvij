@@ -7,6 +7,15 @@
 // Telegram и Instagram — имя без @ (например, «media_ocenka»).
 // Фото специалиста — файл в папке img/team/ (квадратное, от 300×300), например «team/ivanova.jpg».
 // Адрес специалиста — где он принимает; показывается в карточке направления.
+// avatarIcon: true — вместо инициалов в кружке значок направления (для организации вместо человека).
+
+// ТОО «Успех Проект» — и специалист по перепланировке, и партнёр: данные в одном месте.
+const USPEKH = {
+  name: 'ТОО «Успех Проект»',
+  address: 'г. Рудный, ул. Ленина, 135, каб. 9',
+  phones: ['+7 714 31 4 09 88', '+7 701 524 73 72', '+7 747 648 63 55'],  // городской и два мобильных
+  email: 'galinaserb@bk.ru'
+};
 
 export const SITE = {
   company: {
@@ -42,14 +51,15 @@ export const SITE = {
       title: 'Перепланировка',
       role: 'Специалист по перепланировке',
       about: 'Согласование перепланировки и документы',
-      name: '',
+      name: USPEKH.name,
+      avatarIcon: true,
       photo: '',
-      phone: '',
+      phone: USPEKH.phones[1],   // мобильный +7 701 524 73 72; WhatsApp неизвестен — не указываем
       whatsapp: '',
       telegram: '',
       instagram: '',
-      email: '',
-      address: ''
+      email: USPEKH.email,
+      address: USPEKH.address
     },
     deals: {
       title: 'Купля-продажа',
@@ -70,7 +80,7 @@ export const SITE = {
   // в списке; пустой список — блок на сайте не показывается.
   partners: [
     {
-      name: 'ТОО «Успех Проект»',
+      name: USPEKH.name,
       role: 'Архитектор · перепланировка',
       logo: 'partners/uspekh-proekt.jpg',   // временный, клиент пришлёт новый
       lead: 'Поможет вам узаконить перепланировку квартиры:',
@@ -80,9 +90,9 @@ export const SITE = {
         'Изготовление проектов',
         'Изготовление и согласование акта ввода в эксплуатацию'
       ],
-      address: 'г. Рудный, ул. Ленина, 135, каб. 9',
-      phones: ['+7 714 31 4 09 88', '+7 701 524 73 72', '+7 747 648 63 55'],
-      email: 'galinaserb@bk.ru'
+      address: USPEKH.address,
+      phones: USPEKH.phones,
+      email: USPEKH.email
     }
   ],
 
