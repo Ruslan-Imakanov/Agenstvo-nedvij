@@ -63,7 +63,8 @@ function whoHtml(s) {
 function renderSpecs() {
   $$('[data-spec]').forEach(box => {
     const s = contactsOf(box.dataset.spec);
-    box.innerHTML = `${whoHtml(s)}<div class="links">${linksHtml(s, { compact: true })}</div>
+    const addr = s.address ? `<p class="addr">${icon('pin')}${esc(s.address)}</p>` : '';
+    box.innerHTML = `${whoHtml(s)}${addr}<div class="links">${linksHtml(s, { compact: true })}</div>
       <button class="btn block" type="button" data-contact="${s.dir}">${icon('calendar')}Записаться на консультацию</button>`;
   });
   const list = $('[data-specs-list]');
@@ -76,9 +77,34 @@ function renderSpecs() {
       return `<div class="row"><span>${esc(s.title)}${s.name ? ' — ' + esc(s.name) : ''}</span>${link}</div>`;
     }).join('');
   }
-  $$('[data-co-phone]').forEach(a => { a.href = 'tel:' + SITE.company.phoneHref; if (!a.children.length) a.textContent = SITE.company.phone; });
-  $$('[data-co-email]').forEach(a => { a.href = 'mailto:' + SITE.company.email; if (!a.children.length) a.textContent = SITE.company.email; });
+  // Текст — в самой ссылке или, если внутри есть иконка, в её <b> (телефон) / <span> (почта)
+  $$('[data-co-phone]').forEach(a => { a.href = 'tel:' + SITE.company.phoneHref; const t = a.children.length ? $('b', a) : a; if (t) t.textContent = SITE.company.phone; });
+  $$('[data-co-email]').forEach(a => { a.href = 'mailto:' + SITE.company.email; const t = a.children.length ? $('span', a) : a; if (t) t.textContent = SITE.company.email; });
   $$('[data-co-hours]').forEach(el => { if (SITE.company.hours) el.textContent = SITE.company.hours; else el.hidden = true; });
+}
+
+// Блок «Наши партнёры»; без партнёров прячем и блок, и ссылки на него
+function renderPartners() {
+  const box = $('[data-partners]');
+  if (!box) return;
+  const list = SITE.partners || [];
+  [box.closest('section'), ...$$('a[href="#partners"]').map(a => a.closest('li') || a)]
+    .forEach(el => { el.style.display = list.length ? '' : 'none'; });
+  const phone = ph => {
+    const href = telHref(ph);
+    return href ? `<a class="chip-btn" href="tel:${href}">${icon('phone')}${esc(ph)}</a>` : `<span class="chip-btn">${icon('phone')}${esc(ph)}</span>`;
+  };
+  box.innerHTML = list.map(p => `<article class="partner${p.logo ? '' : ' no-logo'}">
+      ${p.logo ? `<div class="logo-box"><img src="img/${esc(p.logo)}" alt="Логотип ${esc(p.name)}" loading="lazy"></div>` : ''}
+      <div class="info">
+        ${p.role ? `<span class="tag">${esc(p.role)}</span>` : ''}
+        <h3>${esc(p.name)}</h3>
+        ${p.lead ? `<p class="lead">${esc(p.lead)}</p>` : ''}
+        ${p.services?.length ? `<ul class="ticks">${p.services.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+        ${p.address ? `<p class="addr">${icon('pin')}${esc(p.address)}</p>` : ''}
+        <div class="links">${(p.phones || []).map(phone).join('')}${p.email ? `<a class="chip-btn" href="mailto:${esc(p.email)}">${icon('mail')}${esc(p.email)}</a>` : ''}</div>
+      </div>
+    </article>`).join('');
 }
 
 // ---------- Форма записи ----------
@@ -324,6 +350,7 @@ if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: re
 
 // ---------- Старт ----------
 renderSpecs();
+renderPartners();
 $$('[data-inline-form]').forEach(box => { box.innerHTML = formHtml(box.dataset.inlineForm || 'valuation'); mountForm(box); });
 $$('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); });
 if (location.hash === '#contact') openModal();
