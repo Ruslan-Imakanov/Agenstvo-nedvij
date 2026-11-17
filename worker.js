@@ -8,7 +8,7 @@
 // Пока TG_TOKEN и TG_CHAT не заданы, /api/lead отвечает { ok: false } и сайт предлагает отправить заявку в WhatsApp или на почту.
 // compatibility_flags: ["assets_navigation_has_no_effect"] — обязательно: без него Cloudflare отвечает на переходы
 // браузера («/», «/privacy») сам, не вызывая воркер, и показывает 404.html.
-const DIRS = { valuation: 'Оценка', replan: 'Перепланировка', deals: 'Купля-продажа' };
+const DIRS = { valuation: 'Оценка', replan: 'Перепланировка', deals: 'Риелтор' };
 
 export default {
   async fetch(request, env) {

@@ -62,8 +62,8 @@ export const SITE = {
       address: USPEKH.address
     },
     deals: {
-      title: 'Купля-продажа',
-      role: 'Специалист по сделкам',
+      title: 'Риелтор',
+      role: 'Риелтор',
       about: 'Сопровождение купли-продажи недвижимости',
       name: '',
       photo: '',
