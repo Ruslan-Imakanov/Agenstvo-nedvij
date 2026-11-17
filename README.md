@@ -38,7 +38,8 @@ hoster.kz заменить NS-серверы на выданные Cloudflare (�
 `public/img/partners/` (до 640 px по ширине). Пустой список — блок и ссылки на него в меню и подвале скрываются.
 
 Сейчас там ТОО «Успех Проект» (архитектор, перепланировка). Логотип `img/partners/uspekh-proekt.jpg` — временный,
-прислан клиентом: на картинке видны водяные знаки фотостока; клиент пришлёт новый.
+прислан клиентом: на картинке видны водяные знаки фотостока; клиент пришлёт новый. Новый логотип класть **под новым
+именем файла** и менять путь в `logo`: картинки из `/img/` браузер кеширует на 30 дней (`_headers`).
 
 ## Куда приходят заявки
 
@@ -61,6 +62,9 @@ hoster.kz заменить NS-серверы на выданные Cloudflare (�
    `compatibility_flags: ["assets_navigation_has_no_effect"]` — без него браузер на «/» получит 404.html,
    `keep_bindings: ["secret_text", "plain_text"]` — чтобы не стереть TG_TOKEN и TG_CHAT.
    Только код воркера без файлов — то же самое с `keep_assets: true` вместо `assets`.
+   Если в облачной среде Claude сохранён сетевой секрет для `api.cloudflare.com` («Cloudflare API token (Workers)»),
+   прокси подставляет его вместо токена загрузки, и шаг 2 падает с 401 `token verification failure`
+   (`X-Proxy-Error: upstream auth failed`). Шаги 1 и 3 этому не мешают — их делает коннектор Cloudflare.
 4. Проверить живой сайт как браузер: `curl -H "Sec-Fetch-Mode: navigate" https://mip-site.imakanovr.workers.dev/` → 200.
 
 Локально: `cd mip/public && python3 -m http.server 8080` → http://localhost:8080 (форма уйдёт в запасной режим — без воркера).
