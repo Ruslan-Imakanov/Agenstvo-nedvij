@@ -9,6 +9,9 @@
 // Адрес специалиста — где он принимает; показывается в карточке направления.
 // avatarIcon: true — вместо инициалов в кружке значок направления (для организации вместо человека).
 
+// Номер и почта оценки и риелтора — одни и те же; на этот номер (WhatsApp) позже подключат CRM.
+const OCENKA = { phone: '+7 708 341 35 60', email: 'mediaocenka@mail.ru' };
+
 // ТОО «Успех Проект» — и специалист по перепланировке, и партнёр: данные в одном месте.
 const USPEKH = {
   name: 'ТОО «Успех Проект»',
@@ -40,11 +43,11 @@ export const SITE = {
       about: 'Оценка недвижимого и движимого имущества',
       name: '',        // ФИО, например «Айгерим Сапарова»
       photo: '',
-      phone: '+7 708 341 35 60',
-      whatsapp: '+7 708 341 35 60',  // на этот номер позже подключат CRM
+      phone: OCENKA.phone,
+      whatsapp: OCENKA.phone,
       telegram: '',
       instagram: '',
-      email: 'mediaocenka@mail.ru',
+      email: OCENKA.email,
       address: 'г. Рудный, ул. Ленина, 135'
     },
     replan: {
@@ -67,11 +70,11 @@ export const SITE = {
       about: 'Сопровождение купли-продажи недвижимости',
       name: '',
       photo: '',
-      phone: '+7 701 544 27 74',
-      whatsapp: '+7 701 544 27 74',
+      phone: OCENKA.phone,       // тот же номер и WhatsApp, что у оценки
+      whatsapp: OCENKA.phone,
       telegram: '',
       instagram: '',
-      email: '',
+      email: OCENKA.email,
       address: 'г. Рудный, ул. Ленина, 135'
     }
   },
