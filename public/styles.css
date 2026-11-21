@@ -495,6 +495,14 @@ ul, ol { margin: 0; padding: 0; }
 .office { padding: 26px; border-radius: var(--r-xl); background: var(--surface); border: 1px solid var(--line); display: grid; gap: 14px; align-content: start; }
 .office .city { font: 800 12.5px/1 var(--font-head); letter-spacing: .12em; text-transform: uppercase; color: var(--brand); }
 .office address { font-style: normal; font: 700 19px/1.4 var(--font-head); }
+.office address span { display: block; }
+/* Адрес всегда в три строки (область / город / улица, дом): строки не переносятся, а шрифт подгоняется под ширину
+   карточки, чтобы самая длинная строка влезала на любом экране. В старых браузерах без container queries
+   строки просто переносятся по пробелам («г.», «д.», «вп.» неразрывно с тем, к чему относятся). */
+@supports (container-type: inline-size) {
+  .office address { container-type: inline-size; }
+  .office address span { white-space: nowrap; font-size: min(19px, 6.2cqw); }
+}
 .office .maps { display: flex; flex-wrap: wrap; gap: 8px; }
 .office.main { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto; align-items: center; gap: 18px 40px; background: linear-gradient(120deg, var(--brand) 0%, var(--brand-2) 70%, var(--brand-3) 140%); color: #fff; border: 0; }
 .office.main .lines { display: grid; gap: 12px; }
