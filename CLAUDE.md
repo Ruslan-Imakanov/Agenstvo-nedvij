@@ -4,7 +4,8 @@
 Бриф клиента — `content/brief.md` (тексты об оценке оттуда — ставить дословно, не переписывать).
 Живой сайт: **https://mip-site.imakanovr.workers.dev** — Cloudflare Worker `mip-site` (аккаунт `3257b22ca5a38019c74864b01be83b81`).
 Домен клиента — `mip.com.kz` (куплен на hoster.kz), подключается через Cloudflare со сменой NS — README.
-Порядок выкладки — README («Выкладка»). Netlify не используется. `@view-transition` не включать (Chrome на хостинге его отменяет).
+Порядок выкладки — README («Выкладка»).
+Хостинг hoster.kz (Plesk, «Эконом-1», оплачен до ноября 2027): версия для него — `hoster/` + `tools/pack-hoster.py`, README («Выкладка на hoster.kz»). Netlify не используется. `@view-transition` не включать (Chrome на хостинге его отменяет).
 
 ## Правила
 - Чистые HTML/CSS/JS без сборки. Одна страница `public/index.html`, логика — `public/app.js` (ES-модуль).

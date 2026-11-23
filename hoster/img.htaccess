@@ -1,0 +1,4 @@
+# Картинки браузер хранит 30 дней (как в _headers на Cloudflare).
+<IfModule mod_headers.c>
+  Header set Cache-Control "public, max-age=2592000"
+</IfModule>
