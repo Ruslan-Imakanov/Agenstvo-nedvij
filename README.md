@@ -96,7 +96,17 @@ hoster.kz заменить NS-серверы на выданные Cloudflare (�
 «Apache и nginx» → «Дополнительные директивы nginx» и те же четыре строки через `add_header … always;`, а блок `Header`
 из `.htaccess` убрать, иначе заголовки продублируются.
 
-Обновления: снова `pack-hoster.py` и загрузка поверх; `api/config.php` в архиве нет, поэтому не затирается.
+### Автоматическая выкладка (GitHub Actions → FTPS)
+
+`.github/workflows/deploy-hoster.yml`: при каждом пуше в ветку `claude/peaceful-meitner-bw0e0i` (если менялись `public/`,
+`hoster/`, `tools/pack-hoster.py` или сам файл) собирает тот же пакет и загружает его в `httpdocs` по FTPS, затем сверяет
+`index.html`, `app.js`, `site.config.js`, `styles.css` на https://mip.com.kz с загруженными. Запустить вручную: Actions →
+«Deploy to hoster.kz» → Run workflow. Ничего на сервере не удаляется (`api/config.php` и журнал заявок остаются).
+Секреты репозитория: `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` — FTP-учётная запись `mipdeploy` из Plesk (домашняя папка
+`/httpdocs`). Отключить выкладку: удалить файл workflow или FTP-учётную запись в Plesk. Если загрузка падает с ошибкой
+сертификата — сервер FTP предъявляет сертификат не на тот адрес; пароль без шифрования не отправляется намеренно.
+
+Обновления вручную: снова `pack-hoster.py` и загрузка поверх; `api/config.php` в архиве нет, поэтому не затирается.
 
 ## Фото
 

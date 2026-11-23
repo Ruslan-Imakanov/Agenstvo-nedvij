@@ -1,0 +1,88 @@
+# Автоматическая выкладка сайта на hoster.kz (Plesk) по защищённому FTP (FTPS).
+# Запускается при каждом пуше в ветку ниже, если изменились файлы сайта, и вручную (кнопка «Run workflow»).
+# Секреты репозитория (Settings → Secrets and variables → Actions): FTP_HOST, FTP_USER, FTP_PASSWORD.
+# Загружаются только файлы сайта; на сервере ничего не удаляется (api/config.php и журнал заявок остаются).
+name: Deploy to hoster.kz
+
+on:
+  push:
+    branches: [claude/peaceful-meitner-bw0e0i]
+    paths:
+      - 'public/**'
+      - 'hoster/**'
+      - 'tools/pack-hoster.py'
+      - '.github/workflows/deploy-hoster.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-hoster
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Проверить секреты
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          for v in FTP_HOST FTP_USER FTP_PASSWORD; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Не задан секрет $v (Settings → Secrets and variables → Actions)"
+              exit 1
+            fi
+          done
+
+      - name: Собрать пакет для hoster.kz
+        run: |
+          python3 tools/pack-hoster.py "$RUNNER_TEMP/mip-hoster.zip"
+          mkdir dist
+          unzip -q "$RUNNER_TEMP/mip-hoster.zip" -d dist
+          # у файлов в архиве фиксированная дата; ставим сегодняшнюю, чтобы загрузка не пропускала «старые» файлы
+          find dist -type f -exec touch {} +
+          find dist -type f | sort
+
+      - name: Установить lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: Загрузить на хостинг (FTPS)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          # Папка входа FTP-учётной записи — httpdocs, поэтому «/» на сервере и есть корень сайта.
+          # Без --delete: ничего лишнего на сервере не удаляется. Сертификат сервера проверяется; без шифрования пароль не отправляется.
+          lftp -u "${FTP_USER},${FTP_PASSWORD}" "$FTP_HOST" <<'LFTP'
+          set cmd:fail-exit yes
+          set ftp:ssl-force yes
+          set ftp:ssl-protect-data yes
+          set ssl:verify-certificate yes
+          set net:max-retries 3
+          set net:timeout 30
+          mirror -R --no-perms --verbose ./dist /
+          bye
+          LFTP
+
+      - name: Проверить, что сайт обновился
+        run: |
+          for f in index.html app.js site.config.js styles.css; do
+            ok=0
+            for i in 1 2 3 4 5; do
+              if curl -fsS -H 'Cache-Control: no-cache' "https://mip.com.kz/$f" | cmp -s - "dist/$f"; then ok=1; break; fi
+              sleep 5
+            done
+            if [ "$ok" != 1 ]; then
+              echo "::error::Файл $f на https://mip.com.kz не совпадает с загруженным"
+              exit 1
+            fi
+            echo "ок: $f совпадает"
+          done
