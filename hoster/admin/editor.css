@@ -1,0 +1,148 @@
+/* Редактор сайта (страница /?cms=1, только для вошедших администраторов). На обычном сайте не подключается. */
+:root { --cms-bar-h: 56px; --cms-acc: #F59E0B; }
+html.cms-on { scroll-padding-top: calc(var(--header-h) + 28px + var(--cms-bar-h)); }
+.cms-on body { padding-top: var(--cms-bar-h); }
+.cms-on .header { top: var(--cms-bar-h); }
+.cms-on .mnav { top: var(--cms-bar-h); }
+.cms-on .split .pic { top: calc(var(--header-h) + 40px + var(--cms-bar-h)); }
+.cms-on .reveal, .cms-on .reveal-group > * { opacity: 1 !important; transform: none !important; transition: none !important; }
+.cms-on .dir:hover, .cms-on .why li:hover { transform: none; }
+.cms-on .dir:hover .ph img { transform: none; }
+.cms-on .hero .bg img, .cms-on .hero .enter > * { animation: none; }
+
+/* Тексты, которые можно править */
+.cms-field { outline: 1px dashed transparent; outline-offset: 3px; border-radius: 3px; cursor: text; transition: outline-color .15s, background-color .15s; }
+.cms-field:hover { outline-color: color-mix(in srgb, var(--cms-acc) 85%, transparent); }
+.cms-field:focus { outline: 2px solid var(--cms-acc); background-color: color-mix(in srgb, var(--cms-acc) 9%, transparent); }
+.cms-field:empty::after { content: attr(data-cms-ph); opacity: .5; font-style: italic; font-weight: 400; }
+.cms-item-active { outline: 2px dashed color-mix(in srgb, var(--cms-acc) 75%, transparent); outline-offset: 6px; border-radius: 6px; }
+.cms-on [data-edit-list="extra"]:not(:has(> [data-edit-item]))::before {
+  content: "Здесь можно добавить свои блоки — заголовок и текст. Пока блоков нет, посетители этот раздел не видят.";
+  display: block; padding: 22px; border: 1.5px dashed #C9D7EA; border-radius: 18px; color: #74849F; text-align: center;
+  font: 500 14.5px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Общий вид интерфейса редактора */
+.cms-ui { font: 500 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; letter-spacing: normal; text-transform: none; }
+.cms-ui[hidden], .cms-ui [hidden] { display: none !important; }
+.cms-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px; padding: 0 14px;
+  border-radius: 10px; border: 1px solid #C9D7EA; background: #fff; color: #0F2142; cursor: pointer; white-space: nowrap;
+  font: 600 14px/1 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; letter-spacing: normal; text-transform: none;
+}
+.cms-btn:hover { border-color: #27449E; color: #27449E; }
+.cms-btn.primary { background: #27449E; border-color: #27449E; color: #fff; }
+.cms-btn.primary:hover { background: #1C3480; border-color: #1C3480; color: #fff; }
+.cms-btn.danger { color: #C23B3B; border-color: #F0C9C9; }
+.cms-btn.danger:hover { border-color: #C23B3B; color: #C23B3B; }
+.cms-btn.sm { min-height: 32px; padding: 0 10px; font-size: 13px; }
+.cms-btn[disabled] { opacity: .45; cursor: default; }
+
+/* Верхняя панель */
+.cms-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 2147483000; height: var(--cms-bar-h);
+  display: flex; align-items: center; gap: 8px; padding: 0 10px 0 16px; background: #0F2142; color: #fff;
+  box-shadow: 0 4px 18px rgba(15, 33, 66, .28);
+}
+.cms-bar .cms-title { font-weight: 800; white-space: nowrap; }
+.cms-bar .cms-status { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(255, 255, 255, .72); font-size: 13px; }
+.cms-bar.dirty .cms-status { color: #FCD34D; }
+.cms-bar .cms-sp { flex: 1; }
+.cms-bar .cms-wide { display: flex; gap: 6px; }
+.cms-bar .cms-btn { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .26); }
+.cms-bar .cms-btn:hover { border-color: #fff; color: #fff; }
+.cms-bar .cms-btn.primary { background: var(--cms-acc); border-color: var(--cms-acc); color: #0F2142; }
+.cms-bar .cms-btn.primary:hover { background: #FBBF24; border-color: #FBBF24; }
+.cms-bar .cms-btn[disabled] { opacity: .45; }
+@media (max-width: 1240px) { .cms-bar .cms-wide { display: none; } }
+@media (max-width: 640px) {
+  :root { --cms-bar-h: 52px; }
+  .cms-bar { padding: 0 8px 0 12px; gap: 6px; }
+  .cms-bar .cms-title, .cms-bar .cms-undo { display: none; }
+  .cms-bar .cms-btn { padding: 0 11px; }
+}
+.cms-menu {
+  position: fixed; top: calc(var(--cms-bar-h) + 6px); right: 10px; z-index: 2147483001; min-width: 250px; max-width: calc(100vw - 20px);
+  display: grid; padding: 6px; background: #fff; border-radius: 14px; box-shadow: 0 18px 48px rgba(15, 33, 66, .3);
+}
+.cms-menu button { padding: 12px 14px; border: 0; border-radius: 10px; background: none; color: #0F2142; text-align: left; cursor: pointer; font: 500 15px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+.cms-menu button:hover { background: #EEF3FA; }
+
+/* Плавающие кнопки */
+.cms-layer { position: absolute; top: 0; left: 0; width: 0; height: 0; z-index: 2147482000; }
+.cms-chip {
+  position: absolute; top: 0; left: 0; display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border: 0; border-radius: 999px;
+  background: rgba(15, 33, 66, .88); color: #fff; cursor: pointer; white-space: nowrap; box-shadow: 0 6px 18px rgba(15, 33, 66, .3);
+  font: 600 13px/1 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+.cms-chip:hover { background: #27449E; }
+.cms-itembar, .cms-richbar {
+  position: absolute; top: 0; left: 0; z-index: 2147482500; display: flex; gap: 2px; padding: 3px; border-radius: 10px;
+  background: #0F2142; box-shadow: 0 8px 22px rgba(15, 33, 66, .32);
+}
+.cms-itembar button, .cms-richbar button {
+  min-width: 34px; height: 32px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: #fff; cursor: pointer;
+  font: 700 15px/1 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+.cms-itembar button:hover, .cms-richbar button:hover { background: rgba(255, 255, 255, .16); }
+.cms-itembar .del:hover { background: #C23B3B; }
+.cms-richbar .i { font-style: italic; font-family: Georgia, "Times New Roman", serif; }
+.cms-richbar .blk { display: none; }
+.cms-richbar.block .blk { display: inline-block; }
+.cms-add {
+  align-self: flex-start; justify-self: start; display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 9px 14px;
+  border: 1.5px dashed var(--cms-acc); border-radius: 10px; background: color-mix(in srgb, var(--cms-acc) 10%, transparent); color: inherit; cursor: pointer;
+  font: 600 13.5px/1 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; letter-spacing: normal; text-transform: none;
+}
+.cms-add:hover { background: color-mix(in srgb, var(--cms-acc) 22%, transparent); }
+
+/* Окна */
+.cms-dlg { position: fixed; inset: 0; z-index: 2147483100; display: grid; place-items: center; padding: 16px; color: #0F2142; }
+.cms-dlg-shade { position: absolute; inset: 0; background: rgba(15, 33, 66, .55); }
+.cms-dlg-box {
+  position: relative; display: flex; flex-direction: column; width: 100%; max-width: 480px; max-height: calc(100dvh - 32px); overflow: hidden;
+  background: #fff; border-radius: 18px; box-shadow: 0 24px 64px rgba(15, 33, 66, .35);
+}
+.cms-dlg-box.wide { max-width: 720px; }
+.cms-dlg-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px 14px; border-bottom: 1px solid #DCE6F3; }
+.cms-dlg-head h2 { margin: 0; color: #0F2142; font: 800 19px/1.25 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; letter-spacing: normal; }
+.cms-x { flex: none; width: 36px; height: 36px; border: 0; border-radius: 50%; background: #EEF3FA; color: #44567A; cursor: pointer; font-size: 15px; }
+.cms-dlg-body { padding: 16px 20px 8px; overflow: auto; overscroll-behavior: contain; }
+.cms-dlg-body p { margin: 0 0 12px; color: #44567A; }
+.cms-dlg-body h3 { margin: 18px 0 10px; color: #0F2142; font: 800 15px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; letter-spacing: normal; }
+.cms-dlg-body h3:first-child { margin-top: 0; }
+.cms-dlg-body > div > .cms-btn { margin: 0 0 6px; }
+.cms-dlg-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 12px 20px 16px; border-top: 1px solid #DCE6F3; }
+.cms-row { display: grid; gap: 5px; margin: 0 0 12px; }
+.cms-lbl { color: #44567A; font-size: 13px; font-weight: 700; }
+.cms-row input, .cms-row textarea {
+  width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid #C9D7EA; border-radius: 10px; background: #fff; color: #0F2142;
+  font: 400 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+.cms-row textarea { min-height: 76px; resize: vertical; }
+.cms-row input:focus, .cms-row textarea:focus { outline: none; border-color: #27449E; box-shadow: 0 0 0 3px rgba(79, 134, 201, .25); }
+.cms-row small { color: #74849F; font-size: 12.5px; line-height: 1.4; }
+.cms-check { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 12px; color: #0F2142; font-size: 14px; cursor: pointer; }
+.cms-check input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: #27449E; }
+.cms-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+.cms-tabs button { min-height: 36px; padding: 0 14px; border: 1px solid #C9D7EA; border-radius: 999px; background: #fff; color: #0F2142; cursor: pointer; font: 600 14px/1 system-ui, sans-serif; }
+.cms-tabs button[aria-selected="true"] { background: #27449E; border-color: #27449E; color: #fff; }
+.cms-photo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.cms-thumb { width: 64px; height: 64px; object-fit: cover; border: 1px solid #DCE6F3; border-radius: 10px; background: #F4F8FD; }
+.cms-muted { color: #74849F; font-size: 13px; }
+.cms-card { margin: 0 0 14px; padding: 12px 14px 4px; border: 1px solid #DCE6F3; border-radius: 14px; }
+.cms-card legend { padding: 0 6px; font-weight: 800; }
+.cms-card-tools { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin: -2px 0 10px; }
+.cms-hrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #EEF3FA; }
+.cms-hrow.cur b { color: #1F8A5B; }
+.cms-badge { flex: none; padding: 4px 9px; border-radius: 999px; background: #E4F4EC; color: #1F8A5B; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.cms-help { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: #44567A; }
+
+.cms-toast {
+  position: fixed; left: 50%; bottom: 24px; z-index: 2147483200; max-width: calc(100vw - 32px); padding: 12px 18px; border-radius: 12px;
+  background: #0F2142; color: #fff; box-shadow: 0 12px 32px rgba(15, 33, 66, .35); pointer-events: none;
+  opacity: 0; transform: translate(-50%, 20px); transition: opacity .2s, transform .2s;
+}
+.cms-toast.show { opacity: 1; transform: translate(-50%, 0); }
+.cms-busy { position: fixed; inset: 0; z-index: 2147483300; display: grid; place-items: center; background: rgba(255, 255, 255, .65); color: #0F2142; font-weight: 700; font-size: 16px; }
+@media (max-width: 760px) { .cms-toast { bottom: calc(92px + env(safe-area-inset-bottom)); } }

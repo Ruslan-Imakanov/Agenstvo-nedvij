@@ -1,6 +1,17 @@
 // Сайт ТОО «MEDIA Информ Плюс»: контакты специалистов, окно «Связаться», форма записи,
 // меню, вкладки и анимации. Без сборки — подключается как ES-модуль.
-import { SITE } from './site.config.js';
+import { SITE as BASE } from './site.config.js';
+
+// Правки из кабинета администратора (только на hoster.kz): сервер кладёт их в window.SITE_OVERRIDES.
+// Поверх site.config.js: объекты сливаются по полям, списки и значения заменяются целиком.
+function merge(a, b) {
+  if (b === undefined) return a;
+  if (b === null || typeof b !== 'object' || Array.isArray(b) || a === null || typeof a !== 'object' || Array.isArray(a)) return b;
+  const out = { ...a };
+  for (const k of Object.keys(b)) if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') out[k] = merge(a[k], b[k]);
+  return out;
+}
+const SITE = merge(BASE, window.SITE_OVERRIDES);
 
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -80,7 +91,11 @@ function renderSpecs() {
   // Текст — в самой ссылке или, если внутри есть иконка, в её <b> (телефон) / <span> (почта)
   $$('[data-co-phone]').forEach(a => { a.href = 'tel:' + SITE.company.phoneHref; const t = a.children.length ? $('b', a) : a; if (t) t.textContent = SITE.company.phone; });
   $$('[data-co-email]').forEach(a => { a.href = 'mailto:' + SITE.company.email; const t = a.children.length ? $('span', a) : a; if (t) t.textContent = SITE.company.email; });
-  $$('[data-co-hours]').forEach(el => { if (SITE.company.hours) el.textContent = SITE.company.hours; else el.hidden = true; });
+  $$('[data-co-hours]').forEach(el => {
+    const hours = SITE.company.hours;
+    el.hidden = !hours;
+    if (hours) el.innerHTML = `${icon('clock')}<span>${esc(hours)}</span>`;
+  });
 }
 
 // Блок «Наши партнёры»; без партнёров прячем и блок, и ссылки на него

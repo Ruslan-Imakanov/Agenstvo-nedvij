@@ -1,0 +1,5 @@
+# Данные кабинета администратора создаются на сервере (hoster.kz) — в репозиторий не попадают
+hoster/cms/data/*
+!hoster/cms/data/.htaccess
+hoster/cms/page.tpl
+mip-hoster.zip

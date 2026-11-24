@@ -1,0 +1,9 @@
+# Движок кабинета администратора: шаблон страницы, код и данные (правки, пользователи, история).
+# Из интернета закрыто целиком — страницу собирает /index.php, а кабинет живёт в /admin/.
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>

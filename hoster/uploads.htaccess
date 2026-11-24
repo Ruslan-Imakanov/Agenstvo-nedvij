@@ -1,0 +1,11 @@
+# Фото, загруженные из кабинета администратора (img/uploads). Здесь только картинки:
+# всё, что похоже на скрипт или служебный файл, не открывается и не выполняется.
+<FilesMatch "(?i)\.(php[0-9]?|phtml|phar|pht|inc|cgi|pl|py|sh|asp|aspx|jsp|tmp|htaccess|htpasswd)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>

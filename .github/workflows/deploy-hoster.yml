@@ -1,7 +1,8 @@
 # Автоматическая выкладка сайта на hoster.kz (Plesk) по защищённому FTP (FTPS).
 # Запускается при каждом пуше в ветку ниже, если изменились файлы сайта, и вручную (кнопка «Run workflow»).
 # Секреты репозитория (Settings → Secrets and variables → Actions): FTP_HOST, FTP_USER, FTP_PASSWORD.
-# Загружаются только файлы сайта; на сервере ничего не удаляется (api/config.php и журнал заявок остаются).
+# Загружаются только файлы сайта; на сервере ничего не удаляется, кроме старого index.html (главную теперь
+# собирает index.php). Правки из кабинета (cms/data, img/uploads), api/config.php и журнал заявок остаются.
 name: Deploy to hoster.kz
 
 on:
@@ -11,6 +12,7 @@ on:
       - 'public/**'
       - 'hoster/**'
       - 'tools/pack-hoster.py'
+      - 'tools/cms-check.php'
       - '.github/workflows/deploy-hoster.yml'
   workflow_dispatch:
 
@@ -24,7 +26,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
 
@@ -50,6 +52,15 @@ jobs:
           find dist -type f -exec touch {} +
           find dist -type f | sort
 
+      - name: Проверить кабинет и сборку страницы (PHP)
+        run: |
+          command -v php >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq php-cli; }
+          php -v | head -1
+          find dist -name '*.php' -print0 | xargs -0 -n1 php -l
+          # проверка пишет только во временную папку; в архив её следы не попадают
+          cp -r dist "$RUNNER_TEMP/check"
+          php tools/cms-check.php "$RUNNER_TEMP/check"
+
       - name: Установить lftp
         run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
 
@@ -72,9 +83,43 @@ jobs:
           bye
           LFTP
 
-      - name: Проверить, что сайт обновился
+      - name: Проверить главную; если не открылась — откатить
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          for f in index.html app.js site.config.js styles.css; do
+          ftp_do() {
+            lftp -u "${FTP_USER},${FTP_PASSWORD}" "$FTP_HOST" -e "set cmd:fail-exit yes; set ftp:ssl-force yes; set ftp:ssl-protect-data yes; set ssl:verify-certificate yes; set net:max-retries 3; set net:timeout 30; $1; bye"
+          }
+          state=fail
+          for i in 1 2 3 4 5 6 7 8; do
+            code=$(curl -sS -o page.html -D head.txt -w '%{http_code}' -H 'Cache-Control: no-cache' https://mip.com.kz/ || echo 000)
+            if grep -qiE 'One moment, please|being verified' page.html 2>/dev/null; then
+              echo "попытка $i: страница проверки хостинга от ботов"; state=unknown
+            elif [ "$code" = 200 ] && grep -qiE '^x-mip-cms: [0-9]+' head.txt && grep -q 'data-edit="hero.title"' page.html; then
+              state=ok; break
+            else
+              echo "попытка $i: код $code, $(grep -i '^x-mip-cms' head.txt || echo 'нет X-MIP-CMS')"; state=fail
+            fi
+            sleep 6
+          done
+          if [ "$state" = fail ]; then
+            echo "::error::Главная через index.php не открылась. Откат: возвращаю index.html и убираю index.php."
+            ftp_do "put dist/cms/page.tpl -o index.html; rm -f index.php"
+            exit 1
+          fi
+          if [ "$state" = unknown ]; then
+            echo "::warning::Хостинг показал проверку от ботов — главную проверить не удалось; старый index.html оставлен"
+            exit 0
+          fi
+          echo "ок: главная собирается index.php ($(grep -i '^x-mip-cms' head.txt | tr -d '\r'))"
+          # старый index.html больше не нужен: главную отдаёт index.php, а /index.html ведёт на «/»
+          ftp_do "rm -f index.html" || echo "::warning::Не удалось удалить старый index.html"
+
+      - name: Проверить файлы и закрытые папки
+        run: |
+          for f in app.js site.config.js styles.css admin/editor.js admin/editor.css; do
             ok=0
             for i in 1 2 3 4 5; do
               if curl -fsS -H 'Cache-Control: no-cache' "https://mip.com.kz/$f" | cmp -s - "dist/$f"; then ok=1; break; fi
@@ -86,3 +131,20 @@ jobs:
             fi
             echo "ок: $f совпадает"
           done
+          # данные кабинета (правки, администраторы, ключ) не должны открываться никогда
+          for p in cms/data/content.php cms/data/users.php cms/data/secret.php cms/data/setup-code.php; do
+            code=$(curl -sS -o body.txt -w '%{http_code}' "https://mip.com.kz/$p" || echo 000)
+            if [ "$code" = 200 ] && [ -s body.txt ]; then
+              echo "::error::https://mip.com.kz/$p открывается из интернета (код $code)"
+              exit 1
+            fi
+            echo "ок: /$p закрыт (код $code)"
+          done
+          # шаблон и код движка — не секрет, но тоже должны быть закрыты
+          for p in cms/page.tpl cms/lib.php; do
+            code=$(curl -sS -o body.txt -w '%{http_code}' "https://mip.com.kz/$p" || echo 000)
+            if [ "$code" = 200 ] && [ -s body.txt ]; then echo "::warning::/$p открывается (код $code)"; else echo "ок: /$p закрыт (код $code)"; fi
+          done
+          code=$(curl -sS -o /dev/null -w '%{http_code}' https://mip.com.kz/admin/ || echo 000)
+          echo "кабинет /admin/: код $code"
+          [ "$code" = 200 ] || echo "::warning::/admin/ ответил кодом $code"
