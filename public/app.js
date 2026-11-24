@@ -124,8 +124,8 @@ function formHtml(dir) {
       <select class="input" id="${id}-t" name="time"><option value="">В любое время</option><option>Утром</option><option>Днём</option><option>Вечером</option></select></div>
     <div class="field"><label for="${id}-c">Ваш вопрос</label><textarea class="input" id="${id}-c" name="comment" rows="3" maxlength="1500" placeholder="Например: нужна оценка квартиры для банка"></textarea></div>
     <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <div class="field"><label class="check"><input type="checkbox" name="consent"><span>Я согласен на обработку персональных данных в соответствии с <a href="privacy.html" target="_blank" rel="noopener">политикой конфиденциальности</a></span></label><span class="err">Для отправки заявки нужно ваше согласие</span></div>
     <button class="btn block" type="submit">${icon('send')}Оставить заявку</button>
-    <p class="consent">Нажимая кнопку, вы соглашаетесь на обработку персональных данных в соответствии с <a href="privacy.html">политикой конфиденциальности</a>.</p>
   </form>`;
 }
 
@@ -162,6 +162,7 @@ function mountForm(root) {
   form.addEventListener('change', e => { if (e.target.name === 'dir') paintMini(); });
   phoneMask(form.elements.phone);
   $$('.input', form).forEach(i => i.addEventListener('input', () => i.closest('.field')?.classList.remove('bad')));
+  form.elements.consent.addEventListener('change', e => e.target.closest('.field')?.classList.remove('bad'));
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -171,7 +172,8 @@ function mountForm(root) {
     let ok = true;
     if (name.length < 2) { f.name.closest('.field').classList.add('bad'); ok = false; }
     if (!phone) { f.phone.closest('.field').classList.add('bad'); ok = false; }
-    if (!ok) { form.querySelector('.bad .input').focus(); return; }
+    if (!f.consent.checked) { f.consent.closest('.field').classList.add('bad'); ok = false; }
+    if (!ok) { form.querySelector('.bad .input, .bad input[type=checkbox]').focus(); return; }
     if (f.website.value) return; // бот заполнил скрытое поле
 
     const lead = {

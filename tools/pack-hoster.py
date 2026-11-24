@@ -25,6 +25,7 @@ files['site.config.js'] = cfg.replace("leadEndpoint: '/api/lead'", "leadEndpoint
 
 files['.htaccess'] = (HOSTER / '.htaccess').read_bytes()
 files['img/.htaccess'] = (HOSTER / 'img.htaccess').read_bytes()
+files['fonts/.htaccess'] = (HOSTER / 'img.htaccess').read_bytes()   # шрифты кешируются так же, как картинки
 for p in sorted((HOSTER / 'api').rglob('*')):
     if p.is_file():
         files['api/' + p.relative_to(HOSTER / 'api').as_posix()] = p.read_bytes()

@@ -6,3 +6,6 @@
 
 /img/*
   Cache-Control: public, max-age=2592000
+
+/fonts/*
+  Cache-Control: public, max-age=2592000
